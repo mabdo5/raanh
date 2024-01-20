@@ -1016,6 +1016,39 @@ function Wo_OpenOfferEditBox(offer_id) {
   });
 
 }
+
+
+  function Wo_OpenPostHistoryBox (post_id) {
+    $.ajax({
+      url: 'getPostHistory.php', // Replace with the actual server endpoint
+      method: 'GET',
+      data: { post_id: post_id },
+      success: function (data) {
+        // Process and display edit history
+        if (data.length > 0) {
+          var historyList = $('<ul></ul>');
+          historyList.append('<p>Edit History:</p>');
+          data.forEach(function (history) {
+            historyList.append('<li>' + history.edited_at + ': ' + history.content + '</li>');
+          });
+
+          // Display edit history in a modal or another UI element
+          // Example using Bootstrap modal
+          $('#post-history-modal .modal-body').html(historyList);
+          $('#post-history-modal').modal('show');
+        } else {
+          // No edit history available
+          console.log('No edit history for this post.');
+        }
+      },
+      error: function (error) {
+        console.error('Error getting post history:', error);
+      }
+    });
+  }
+
+
+
 function change_discount(self,offer_id) {
   var type = $(self).val();
   $('.discount_percent_input_'+offer_id).slideUp('slow');

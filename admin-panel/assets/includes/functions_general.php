@@ -110,7 +110,7 @@ function loadHTMLPage($page_url = '', $data = array(), $set_lang = true) {
             return (isset($replace[$m[1]])) ? $replace[$m[1]] : '';
         }, $page_content);
     }
-    
+
     $page_content = preg_replace("/{{LINK (.*?)}}/", getLink("$1"), $page_content);
 
     $page_content = preg_replace_callback("/{{LOAD (.*?)}}/", function($m) {
@@ -2073,7 +2073,7 @@ function fetchDataFromURL($url = '') {
 
 function resetCache($folder = '') {
     $pathScan = './cache';
-    if (!empty($folder)) { 
+    if (!empty($folder)) {
         $pathScan = './cache/' . $folder;
     }
     foreach (glob_recursive($pathScan, '*.tmp') as $key => $value) {
@@ -2082,7 +2082,7 @@ function resetCache($folder = '') {
 }
 function glob_recursive($base, $pattern, $flags = 0) {
 	$flags = $flags & ~GLOB_NOCHECK;
-	
+
 	if (substr($base, -1) !== DIRECTORY_SEPARATOR) {
 		$base .= DIRECTORY_SEPARATOR;
 	}
@@ -2096,7 +2096,7 @@ function glob_recursive($base, $pattern, $flags = 0) {
 	if (!is_array($dirs)) {
 		return $files;
 	}
-	
+
 	foreach ($dirs as $dir) {
 		$dirFiles = glob_recursive($dir, $pattern, $flags);
 		$files = array_merge($files, $dirFiles);
@@ -2347,3 +2347,50 @@ function full_url( $s, $use_forwarded_host = false )
 {
     return url_origin( $s, $use_forwarded_host ) . $s['REQUEST_URI'];
 }
+
+$mysqlConfig = [
+    'host' => '127.0.0.1',
+    'username' => 'root',
+    'password' => 'password',
+    'database' => 'raanh',
+];
+function generatePostHistoryTable()
+{
+
+    global $mysqlConfig;
+    $conn = new mysqli($mysqlConfig['host'], $mysqlConfig['username'], $mysqlConfig['password'], $mysqlConfig['database']);
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+        $sql = "CREATE TABLE IF NOT EXISTS post_histories(
+        id INT(11) AUTO_INCREMENT PRIMARY KEY,
+        post_id INT(11) NOT NULL,
+        postText TEXT NULL,
+        postFile VARCHAR(255) NULL,
+        postFileName VARCHAR(255) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )";
+
+    $conn->query($sql);
+
+    $conn->close();
+
+
+}
+
+function insertRecordToWoLangs()
+{
+    global $mysqlConfig;
+    $conn = new mysqli($mysqlConfig['host'], $mysqlConfig['username'], $mysqlConfig['password'], $mysqlConfig['database']);
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
+    }
+    $sql = "INSERT IGNORE INTO Wo_Langs (lang_key, english, arabic) VALUES
+('post_edits_history', 'Post Edits History', 'سجل تعديلات المنشور')";
+    $conn->query($sql);
+
+    $conn->close();
+}
+
+generatePostHistoryTable();
+insertRecordToWoLangs();

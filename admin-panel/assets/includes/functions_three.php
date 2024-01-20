@@ -6539,8 +6539,25 @@ function Wo_GetFriendsStatus($data_array = array('limit' => 8, 'user_id' => 0, '
         $offset       = Wo_Secure($data_array['offset']);
         $offset_query = " AND `id` < $offset ";
     }
-    // $query     = "SELECT * FROM " . T_USER_STORY . " WHERE (user_id IN (SELECT following_id FROM " . T_FOLLOWERS . " WHERE follower_id = '$user_id') OR user_id = $user_id) AND user_id IN (SELECT user_id FROM " . T_USERS . " WHERE active = '1') $group_by ORDER BY id DESC";
-    $query     = "SELECT DISTINCT user_id,title,description,posted,expire,thumbnail,ad_id,(SELECT MAX(us.id) FROM " . T_USER_STORY . " us WHERE us.user_id = " . T_USER_STORY . ".user_id) AS id  FROM " . T_USER_STORY . " WHERE (user_id IN (SELECT following_id FROM " . T_FOLLOWERS . " WHERE follower_id = '$user_id') OR user_id = $user_id  OR user_id IN (SELECT user_id FROM " . T_USER_ADS . " WHERE status = 1) ) AND user_id IN (SELECT user_id FROM " . T_USERS . " WHERE active = '1') $offset_query $group_by ORDER BY id DESC LIMIT " . $data_array['limit'];
+
+// $query     = "SELECT * FROM " . T_USER_STORY . " WHERE (user_id IN (SELECT following_id FROM " . T_FOLLOWERS . " WHERE follower_id = '$user_id') OR user_id = $user_id) AND user_id IN (SELECT user_id FROM " . T_USERS . " WHERE active = '1') $group_by ORDER BY id DESC";
+//    $query     = "SELECT DISTINCT user_id,title,description,posted,expire,thumbnail,ad_id,(SELECT MAX(us.id) FROM "
+//        . T_USER_STORY . " us WHERE us.user_id = " . T_USER_STORY . ".user_id) AS id  FROM " .
+//        T_USER_STORY . " WHERE (user_id IN (SELECT following_id FROM " . T_FOLLOWERS .
+//        " WHERE follower_id = '$user_id') OR user_id = $user_id  OR user_id IN (SELECT user_id FROM " . T_USER_ADS .
+//        " WHERE status = 1) ) AND user_id IN (SELECT user_id FROM " . T_USERS .
+//        " WHERE active = '1') $offset_query $group_by ORDER BY id DESC LIMIT " .
+//        $data_array['limit'] . "GROUP BY user_id, title, description, posted, expire, thumbnail, ad_id";
+
+    $query = "SELECT user_id, MAX(title) AS title, MAX(description) AS description, MAX(posted) AS posted, MAX(expire) AS expire, MAX(thumbnail) AS thumbnail, MAX(ad_id) AS ad_id, MAX((SELECT MAX(us.id) FROM " . T_USER_STORY . " us WHERE us.user_id = " . T_USER_STORY . ".user_id)) AS id
+          FROM " . T_USER_STORY . "
+          WHERE (user_id IN (SELECT following_id FROM " . T_FOLLOWERS . " WHERE follower_id = '$user_id') OR user_id = $user_id OR user_id IN (SELECT user_id FROM " . T_USER_ADS . " WHERE status = 1))
+            AND user_id IN (SELECT user_id FROM " . T_USERS . " WHERE active = '1')
+          $offset_query
+          $group_by
+          ORDER BY id DESC
+          LIMIT " . $data_array['limit'];
+
     $query_run = mysqli_query($sqlConnect, $query);
     $last_story = null;
     while ($fetched_data = mysqli_fetch_assoc($query_run)) {
